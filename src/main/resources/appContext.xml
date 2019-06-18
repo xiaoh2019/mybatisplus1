@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mybatis="http://mybatis.org/schema/mybatis-spring"
+       xsi:schemaLocation="http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+     http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+     http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+     http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring.xsd">
+    <context:property-placeholder location="classpath:db.properties"/>
+    <context:component-scan base-package="com.cyzs">
+
+    </context:component-scan>-->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="${db.driver}"/>
+        <property name="jdbcUrl" value="${db.url}"/>
+        <property name="user" value="${db.username}"/>
+        <property name="password" value="${db.password}"/>
+    </bean>
+
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+
+    <!--
+       整合mybatis  class="org.mybatis.spring.SqlSessionFactoryBean"
+       整合mybatisplus  class="com.baomidou.mybatisplus.spring.MybatisSqlSessionFactoryBean"
+
+     -->
+    <bean id="sqlSessionFactory" class="com.baomidou.mybatisplus.spring.MybatisSqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="configLocation" value="classpath:mybatis.xml"></property>
+        <property name="typeAliasesPackage" value="com.cyzs.beans" />
+        <property name="globalConfig" ref="globalConfiguration"/>
+
+        <!---->
+        <property name="plugins">
+            <list>
+                <!--分页插件-->
+                <bean class="com.baomidou.mybatisplus.plugins.PaginationInterceptor"/>
+                <!--用来sql性能分析-->
+                <bean class="com.baomidou.mybatisplus.plugins.PerformanceInterceptor">
+                    <!--sql语句格式化-->
+                    <property name="format" value="true"/>
+                    <!--最大执行时间-->
+                    <property name="maxTime" value="200"/>
+                </bean>
+            </list>
+        </property>
+    </bean>
+    <mybatis:scan base-package="com.cyzs.mapper"/>
+
+    <bean id="globalConfiguration" class="com.baomidou.mybatisplus.entity.GlobalConfiguration">
+        <!--<property name="keyGenerator" value="true"/>-->
+        <!--驼峰映射-->
+        <property name="dbColumnUnderline" value="true"/>
+        <!--主键策略-->
+        <property name="idType" value="0"/>
+        <!--注入逻辑删除-->
+        <property name="sqlInjector" ref="logicSqlInjector"/>
+        <property name="logicDeleteValue" value="-1"/>
+        <property name="logicNotDeleteValue" value="1"/>
+
+    </bean>
+
+    <!--逻辑删除-->
+    <bean id="logicSqlInjector" class="com.baomidou.mybatisplus.mapper.LogicSqlInjector">
+
+    </bean>
+
+
+
+
+
+</beans>
