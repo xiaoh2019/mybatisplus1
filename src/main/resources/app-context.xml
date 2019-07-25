@@ -10,10 +10,17 @@
      http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
      http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
      http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring.xsd">
-    <context:property-placeholder location="classpath:db.properties"/>
-    <context:component-scan base-package="com.cyzs">
 
-    </context:component-scan>-->
+    <!--加载属性文件-->
+    <context:property-placeholder location="classpath:db.properties"/>
+
+    <!--组件扫描-->
+    <context:component-scan base-package="com.cyzs" >
+        <!--排除controller层-->
+         <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+    </context:component-scan>
+
+    <!--c3p0连接池的配置-->
     <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
         <property name="driverClass" value="${db.driver}"/>
         <property name="jdbcUrl" value="${db.url}"/>
@@ -21,58 +28,69 @@
         <property name="password" value="${db.password}"/>
     </bean>
 
+    <!--事务管理器-->
     <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
         <property name="dataSource" ref="dataSource" />
     </bean>
-
+    <!--开启注解事务-->
     <tx:annotation-driven transaction-manager="transactionManager"/>
 
     <!--
+       mybatisplus的配置  sqlSessionFactory
        整合mybatis  class="org.mybatis.spring.SqlSessionFactoryBean"
        整合mybatisplus  class="com.baomidou.mybatisplus.spring.MybatisSqlSessionFactoryBean"
-
      -->
     <bean id="sqlSessionFactory" class="com.baomidou.mybatisplus.spring.MybatisSqlSessionFactoryBean">
+        <!--数据源-->
         <property name="dataSource" ref="dataSource" />
+        <!--mybayis配置文件-->
         <property name="configLocation" value="classpath:mybatis.xml"></property>
+        <!--别名处理-->
         <property name="typeAliasesPackage" value="com.cyzs.beans" />
+        <!--全局配置-->
         <property name="globalConfig" ref="globalConfiguration"/>
 
-        <!---->
+        <!--插件配置-->
         <property name="plugins">
             <list>
                 <!--分页插件-->
                 <bean class="com.baomidou.mybatisplus.plugins.PaginationInterceptor"/>
+                <!--防止全表更新删除操作-->
+                <bean class="com.baomidou.mybatisplus.plugins.SqlExplainInterceptor"/>
+                <!--乐观锁插件-->
+                <bean class="com.baomidou.mybatisplus.plugins.OptimisticLockerInterceptor"/>
                 <!--用来sql性能分析-->
                 <bean class="com.baomidou.mybatisplus.plugins.PerformanceInterceptor">
                     <!--sql语句格式化-->
                     <property name="format" value="true"/>
                     <!--最大执行时间-->
-                    <property name="maxTime" value="200"/>
+                    <property name="maxTime" value="500"/>
                 </bean>
             </list>
         </property>
     </bean>
+
+    <!--mybatis的包扫描，也可以直接配置扫描的类，这里直接用的标签-->
     <mybatis:scan base-package="com.cyzs.mapper"/>
 
+    <!--mybatisplus的全局配置-->
     <bean id="globalConfiguration" class="com.baomidou.mybatisplus.entity.GlobalConfiguration">
         <!--<property name="keyGenerator" value="true"/>-->
         <!--驼峰映射-->
         <property name="dbColumnUnderline" value="true"/>
-        <!--主键策略-->
+        <!--主键策略,0为主键自增-->
         <property name="idType" value="0"/>
         <!--注入逻辑删除-->
         <property name="sqlInjector" ref="logicSqlInjector"/>
-        <property name="logicDeleteValue" value="-1"/>
+        <!--已删除  0-->
+        <property name="logicDeleteValue" value="0"/>
+        <!--未删除  1-->
         <property name="logicNotDeleteValue" value="1"/>
 
     </bean>
 
     <!--逻辑删除-->
-    <bean id="logicSqlInjector" class="com.baomidou.mybatisplus.mapper.LogicSqlInjector">
-
-    </bean>
-
+    <bean id="logicSqlInjector" class="com.baomidou.mybatisplus.mapper.LogicSqlInjector" />
 
 
 

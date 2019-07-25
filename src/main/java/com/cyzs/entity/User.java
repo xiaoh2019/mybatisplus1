@@ -1,5 +1,7 @@
 package com.cyzs.entity;
 
+import com.baomidou.mybatisplus.annotations.TableLogic;
+import com.baomidou.mybatisplus.annotations.Version;
 import com.baomidou.mybatisplus.enums.IdType;
 import com.baomidou.mybatisplus.annotations.TableId;
 import com.baomidou.mybatisplus.annotations.TableId;
@@ -8,9 +10,6 @@ import com.baomidou.mybatisplus.activerecord.Model;
 import java.io.Serializable;
 
 /**
- * <p>
- * 
- * </p>
  *
  * @author ${author}
  * @since 2019-06-18
@@ -22,8 +21,31 @@ public class User extends Model<User> {
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
     private String name;
+    private String nickName;
     private Integer flag;
+    @Version
+    private Integer version;
+    /**
+     * 逻辑删除
+     */
+    @TableLogic
+    private Integer deleted;
 
+    public Integer getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Integer deleted) {
+        this.deleted = deleted;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
 
     public Integer getId() {
         return id;
@@ -47,6 +69,14 @@ public class User extends Model<User> {
 
     public void setFlag(Integer flag) {
         this.flag = flag;
+    }
+
+    public String getNickName() {
+        return nickName;
+    }
+
+    public void setNickName(String nickName) {
+        this.nickName = nickName;
     }
 
     @Override
